@@ -13,6 +13,8 @@
                     <local:ValidationBehaviour />
                 </Editor.Behaviors>
             </Editor>
+            <Picker x:Name="ShopPicker" Title="Enter Shop Name"/>
+
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -37,7 +39,7 @@
             <!-- buton pentru stergerea unui produs -->
             <Button Text="Delete Item"
                     MaximumWidthRequest="200"
-                    Clicked="OnDeleteItemButtonClicked" />
+                    Clicked="OnDeleteShopButtonClicked" />
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>

@@ -20,6 +20,10 @@ namespace Bontescu_Maria_Lab7.Data
                 //lab9;
             _database.CreateTableAsync<Product>().Wait();
             _database.CreateTableAsync<ListProduct>().Wait();
+
+            //lab10
+            _database.CreateTableAsync<Shop>().Wait();
+
         }
         public Task<List<ShopList>> GetShopListsAsync()
         {
@@ -84,7 +88,27 @@ namespace Bontescu_Maria_Lab7.Data
             + " on P.ID = LP.ProductID where LP.ShopListID = ?",
             shoplistid);
         }
-       
+        //lab10
+        public Task<List<Shop>> GetShopsAsync()
+        {
+            return _database.Table<Shop>().ToListAsync();
+        }
+        public Task<int> SaveShopAsync(Shop shop)
+        {
+            if (shop.ID != 0)
+            {
+                return _database.UpdateAsync(shop);
+            }
+            else
+            {
+                return _database.InsertAsync(shop);
+            }
+        }
+        public Task<int> DeleteShopAsync(Shop shop)
+        {
+            return _database.DeleteAsync(shop);
+        }
+
 
     }
 }

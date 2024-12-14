@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using SQLite;
+using SQLiteNetExtensions.Attributes;
+
 
 namespace Bontescu_Maria_Lab7.Models
 {
@@ -15,6 +17,10 @@ namespace Bontescu_Maria_Lab7.Models
         [MaxLength(250), Unique]
         public string Description { get; set; }
         public DateTime Date { get; set; }
+
+        [ForeignKey(typeof(Shop))]
+        public int ShopID { get; set; }
+
 
     }
 }

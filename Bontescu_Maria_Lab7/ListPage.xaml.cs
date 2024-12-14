@@ -10,55 +10,127 @@ public partial class ListPage : ContentPage
 
     async void OnSaveButtonClicked(object sender, EventArgs e)
     {
-        var slist = (ShopList)BindingContext;
-        slist.Date = DateTime.UtcNow;
-        await App.Database.SaveShopListAsync(slist);
-        await Navigation.PopAsync();
+        try
+        {
+            var slist = (ShopList)BindingContext;
+            slist.Date = DateTime.UtcNow;
+
+            if (ShopPicker.SelectedItem is not Shop selectedShop)
+            {
+                await DisplayAlert("Eroare", "Selectati un magazin inainte de a salva lista!", "OK");
+                return;
+            }
+
+            slist.ShopID = selectedShop.ID;
+
+            await App.Database.SaveShopListAsync(slist);
+            await DisplayAlert("Succes", "Lista a fost salvata cu succes!", "OK");
+            await Navigation.PopAsync();
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Eroare", $"A aparut o eroare la salvare: {ex.Message}", "OK");
+        }
     }
 
     async void OnDeleteButtonClicked(object sender, EventArgs e)
     {
-        var slist = (ShopList)BindingContext;
-        await App.Database.DeleteShopListAsync(slist);
-        await Navigation.PopAsync();
+        try
+        {
+            var slist = (ShopList)BindingContext;
+
+            if (slist == null)
+            {
+                await DisplayAlert("Eroare", "Nu exista o lista selectata pentru stergere.", "OK");
+                return;
+            }
+
+            bool confirmDelete = await DisplayAlert(
+                "Confirmare",
+                "Sigur doriti sa stergeti aceasta lista?",
+                "Da",
+                "Nu"
+            );
+
+            if (confirmDelete)
+            {
+                await App.Database.DeleteShopListAsync(slist);
+                await DisplayAlert("Succes", "Lista a fost stearsa cu succes.", "OK");
+                await Navigation.PopAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Eroare", $"A aparut o eroare la stergere: {ex.Message}", "OK");
+        }
     }
+
     async void OnChooseButtonClicked(object sender, EventArgs e)
     {
-        await Navigation.PushAsync(new ProductPage((ShopList)
-       this.BindingContext)
+        try
         {
-            BindingContext = new Product()
-        });
-
+            await Navigation.PushAsync(new ProductPage((ShopList)this.BindingContext)
+            {
+                BindingContext = new Product()
+            });
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Eroare", $"A aparut o eroare la navigare: {ex.Message}", "OK");
+        }
     }
+
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        var shopl = (ShopList)BindingContext;
-
-        listView.ItemsSource = await App.Database.GetListProductsAsync(shopl.ID);
-    }
-
-    async void OnDeleteItemButtonClicked(object sender, EventArgs e)
-    {
-        if (listView.SelectedItem is Product selectedProduct)
+        try
         {
-            bool isConfirmed = await DisplayAlert("Confirm Delete",
-                                                  $"Are you sure you want to delete {selectedProduct.Description}?",
-                                                  "Yes", "No");
+            var items = await App.Database.GetShopsAsync();
+            ShopPicker.ItemsSource = (System.Collections.IList)items;
+            ShopPicker.ItemDisplayBinding = new Binding("ShopDetails");
 
-            if (isConfirmed)
+            var shopl = (ShopList)BindingContext;
+
+            if (shopl != null)
             {
-                await App.Database.DeleteProductAsync(selectedProduct);
-
-                listView.ItemsSource = await App.Database.GetProductsAsync();
+                listView.ItemsSource = await App.Database.GetListProductsAsync(shopl.ID);
             }
         }
-        else
+        catch (Exception ex)
         {
-            await DisplayAlert("No Item Selected", "Please select an item to delete.", "OK");
+            await DisplayAlert("Eroare", $"A aparut o eroare la incarcare: {ex.Message}", "OK");
         }
     }
 
+    async void OnDeleteShopButtonClicked(object sender, EventArgs e)
+    {
+        try
+        {
+            var shop = (Shop)BindingContext;
 
+            if (shop == null)
+            {
+                await DisplayAlert("Eroare", "Nu exista niciun magazin selectat pentru stergere.", "OK");
+                return;
+            }
+
+            bool confirmDelete = await DisplayAlert(
+                "Confirmare",
+                $"Sigur doriti sa stergeti magazinul \"{shop.ShopName}\"?",
+                "Da",
+                "Nu"
+            );
+
+            if (confirmDelete)
+            {
+                await App.Database.DeleteShopAsync(shop);
+                await DisplayAlert("Succes", "Magazinul a fost sters cu succes.", "OK");
+                await Navigation.PopAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Eroare", $"A aparut o eroare: {ex.Message}", "OK");
+        }
+    }
 }
